@@ -4,7 +4,14 @@
 이 프로그램은 한컴타자연습 프로그램에 포함된 '산성비' 게임을 python의 pygame 모듈을 활용하여 제작한 게임입니다. 위에서 아래로 떨어지는 단어가 땅바닥에 닿기 전에 타자로 쳐서 없애버리세요!
 
 ## 게임 실행 방법
-
+### 1. 압축파일 다운로드
+Code 버튼을 누르고 Download ZIP을 눌러 다운로드받으신 후, 압축 파일을 풀고 build 폴더의 실행 파일을 실행하시면 됩니다.
+### 2. git으로 다운로드
+Git Bash Shell, Terminal을 사용하여 다음 코드를 복사&붙여넣기하시고 실행하세요.
+```
+https://github.com/lshlsh3690/midTerm_typingGame/tree/Sansungbi-Wordgame-Eunsu_MainMenu
+```
+이후 복사된 디렉토리의 build 폴더에 들어가서 실행 파일을 실행하시면 됩니다.
 
 ## 게임 시작 화면
 ![게임 시작 화면 스크린샷](./screenshots/start.png)
