@@ -6,7 +6,7 @@
         {
             "label": "Python Run",
             "type": "shell",
-            "command": "python3",
+            "command": "python",
             "args": [
                 "${file}"
             ],
