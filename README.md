@@ -9,7 +9,7 @@ Code 버튼을 누르고 Download ZIP을 눌러 다운로드받으신 후, 압�
 ### 2. git으로 다운로드
 Git Bash Shell, Terminal을 사용하여 다음 코드를 복사&붙여넣기하시고 실행하세요.
 ```
-https://github.com/lshlsh3690/midTerm_typingGame/tree/Sansungbi-Wordgame-Eunsu_MainMenu
+https://github.com/lshlsh3690/midTerm_typingGame/
 ```
 이후 복사된 디렉토리의 build 폴더에 들어가서 실행 파일을 실행하시면 됩니다.
 
