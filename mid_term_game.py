@@ -1,63 +1,61 @@
-# 업그레이드 타이핑 게임 제작
-# 사운드 적용 및 DB 연동
-'''파일 목록에서 ctrl+c+v하면 두번째 파일 생성됨. 2로 바꾸고 거기에 코드 추가'''
+# 타이핑 게임 (오전분반 중간고사)
+# 사운드 사용 및 DB연동
 
-import random
-import time
-import sys
-######### 사운드 출력 필요 모듈
-import winsound    #'''파이썬에 내장된 패키지<--소리 재생'''
+import random, time, sys
+
+# 사운드 출력, 데이터베이스, 시간 관련 필요 모듈
+import pygame
 import sqlite3
-import datetime    #'''게임 시간 기록에 필요한 패키지'''
+import datetime
 
-######### DB생성 & Autocommit
-# 본인 DB 파일 경로
-conn = sqlite3.connect('./resource/records.db', isolation_level=None)
-
-######### Cursor연결
+# DB 생성
+conn = sqlite3.connect("./resource/records.db", isolation_level=None)
 cursor = conn.cursor()
 
-######### 테이블 생성(Datatype : TEXT NUMERIC INTEGER REAL BLOB)
-cursor.execute(
-    "CREATE TABLE IF NOT EXISTS records(id INTEGER PRIMARY KEY AUTOINCREMENT,\
-cor_cnt INTEGER, record text, regdate text)"
-)
+# 사운드 불러오기
+pygame.init()
+pygame.mixer.init()
+correct_sound = pygame.mixer.Sound("./sound/good.wav")
+wrong_sound = pygame.mixer.Sound("./sound/bad.wav")
+
+# 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
+cursor.execute("CREATE TABLE IF NOT EXISTS records (" +\
+    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +\
+    "cor_cnt INTEGER, " +\
+    "record TEXT, " +\
+    "regdate TEXT)")
 
 '''AUTOINCREMENT : 삽입할 때 insert해주지 않아도, 저절로 1씩 증가 또는 지정한 수로 증가\
     cor_cnt:정답 개수, record : 결과 '''
 '''실행 했을 때 에러 발생하면 안됨. 데이터베이스 생성됐는지 확인'''
 
-
 ############################# 추가 코드 ############################
 # GameStart 클래스 생성
 class GameStart:
     def __init__(self, user):
-        self.user = user
-        
+        self.user=user
+    
     # 유저 입장 알림
     def user_info(self):
-        print("User : {}님이 입장하였습니다.".format(self.user))
-        print()
+        print("User: {}님이 입장하였습니다.\n".format(self.user))
 #####################################################################3
 
-words = []                                   # 영어 단어 리스트(1000개 로드)
+words = []                                                      # 영단어 리스트 (1000개 로드)
 
-n = 1                                        # 게임 시도 횟수
-cor_cnt = 0                                  # 정답 개수
-
+n = 1                                                           # 게임 시도 횟수
+cor_cnt = 0                                                     # 정답 개수
 try:
     word_f=open('./resource/word.txt', 'r') # 문제 txt 파일 로드
 except IOError:
     print("파일이 없습니다!! 게임을 진행할 수 없습니다!!")
 else:
-        for c in word_f:
-            words.append(c.strip())
-        word_f.close()
+    for c in word_f:
+        words.append(c.strip())
+    word_f.close()
 
-
-if words==[]:                                #파일이 없을때 프로그램 종료
+# 파일을 잘못 불러오거나 빈 파일이면 종료
+if words is []:
     sys.exit()
-#print(words)                                 # 단어 리스트 확인
 
 user_name=input("Ready? Input Your name>> ")             # Enter Game Start! 
 user=GameStart(user_name)                     #### GameStart의 user객체 생성
@@ -65,45 +63,33 @@ user.user_info()                              #### user 입장 알림 메서드 
 
 start = time.time()                          # Start Time
 
-while n <= 5:                                # 5회 반복
-    random.shuffle(words)                    # List shuffle!
-    q = random.choice(words)                 # List -> words random extract!
+while n <= 5:  
+    random.shuffle(words)                                       # 단어 리스트 뒤섞기
+    q = random.choice(words)                                    # 뒤섞인 단어 리스트에서 랜덤으로 하나 선택
 
-    print("{}번 문제>>".format(n),q)         # 문제 출력
+    print("{}번 문제".format(n), q)                               # 문제 표시
     
-    x = input("타이핑 하세요>> ")            # 타이핑 입력
+    x = input("타이핑하세요>> ")                                    # 타이핑 입력
 
-    if str(q).strip() == str(x).strip():     # 입력 확인(공백제거)
-        ########### 정답 소리 재생
-        winsound.PlaySound(                  
-            './sound/good.wav',
-            winsound.SND_FILENAME   #'''winsound의 PlaySound라는 클래스로 지정'''
-            #'''SND_FILENAME을 직접 넣었음'''
-        )
-        ############
-        print(">>Pass!\n")
-        cor_cnt += 1                         # 정답 개수 카운트
-
+    if str(q).strip() == str(x).strip():                        # (공백 제거한) 입력 확인
+        pygame.mixer.Sound.play(correct_sound)                  # 정답 사운드 재생
+        print(">>Passed!\n")
+        cor_cnt += 1                                            # 정답 개수 카운트
     else:
-        ########### 오답 소리 재생
-        winsound.PlaySound(                  
-            './sound/bad.wav',
-            winsound.SND_FILENAME
-        )
-        ##################
+        pygame.mixer.Sound.play(wrong_sound)                    # 오답 사운드 재생
+        print("Wrong!")
+    
+    n += 1                                                      # 다음 문제 전환
 
-        print(">>Wrong!\n")
+end = time.time()                                               # 끝나는 시간 체크
+et = end - start                                                # 총 게임 시간 환산
 
-    n += 1                                   # 다음 문제 전환
-
-end = time.time()                            # End Time
-et = end - start                             # 총 게임 시간
-
-et = format(et, ".3f")                       # 소수 셋째 자리 출력(시간)
-
-print()
 print('--------------')
+print()
+print("\n집계중...\n")
+time.sleep(1)
 
+et = format(et, ".3f")                                          # 시간을 소수 셋째자리까지 출력
 
 if cor_cnt >= 3:                             # 3개 이상 합격
     print("결과 : 합격")
@@ -111,7 +97,7 @@ else:
     print("불합격")
 
 ######### 결과 기록 DB 삽입
-    '''data삽입 전에 먼저 기록테이블 구조 열어보기'''
+'''data삽입 전에 먼저 기록테이블 구조 열어보기'''
 cursor.execute(
     "INSERT INTO records('cor_cnt', 'record', 'regdate') VALUES (?, ?, ?)",
     (
