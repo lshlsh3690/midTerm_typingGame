@@ -12,22 +12,21 @@ https://github.com/rosswf/typing-trainer
 
 ## 게임 실행 방법
 
-### 1. 압축파일 다운로드
-Code 버튼을 누르고 Download ZIP을 눌러 다운로드받으신 후, 압축 파일을 풀고 build 폴더의 실행 파일을 실행하시면 됩니다.
-### 2. 소스 코드 다운로드 후 빌드해서 실행
+### 1. Release 탭에서 실행파일을 받아 실행
 
-**2-1. github 원격 저장소에서 다운로드**
+### 2. 소스 코드 다운로드 후 실행
 
 Git Bash Shell, Terminal을 사용하여 다음 코드를 복사&붙여넣기하시고 실행하세요.
 ```
 https://github.com/lshlsh3690/midTerm_typingGame/
 ```
-**2-2. 필요한 모듈 설치**
 
-해당 파이썬 코드를 빌드하기 위해서는 
+해당 파이썬 코드를 빌드하기 위해서는 **python 3**을 설치하고 추가 모듈을 설치해야 합니다. python 3을 설치한 다음 터미널에 명령을 받아서 **pygame** 모듈을 설치하세요.
+```
+pip3 install pygame
+```
 
-
-이후 복사된 디렉토리의 build 폴더에 들어가서 실행 파일을 실행하시면 됩니다.
+이후 typing-trainer.py 파일을 python에서 실행하면 됩니다.
 
 ## 게임 시작 화면
 ![게임 시작 화면 스크린샷](./screenshots/start.png)

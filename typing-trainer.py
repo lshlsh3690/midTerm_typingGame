@@ -15,7 +15,7 @@ SCORE_COLOUR = pygame.Color('0xF4F7F5')
 END_SCREEN_COLOUR = pygame.Color('0x584B53')
 VELOCITY = 120  # SHOULD BE MULTIPLE OF FPS
 FPS = 60
-WORDS_PER_SECOND = 1.5
+WORDS_PER_SECOND = 0.8
 WORD_FILE = 'words.txt'
 MIN_WORD_LENGTH = 4
 MAX_WORD_LENGTH = 12
@@ -117,7 +117,7 @@ def move_word_and_delete(game_words):
 
 # Add words to list
 def add_words(cycle, game_words, num_words, total_chars, word_list):
-    if cycle == FPS / WORDS_PER_SECOND or cycle == 0:
+    if cycle == int(FPS / WORDS_PER_SECOND) or cycle == 0:
         new_word = Word(random.choice(word_list))
         game_words.append(new_word)
         cycle = 1
