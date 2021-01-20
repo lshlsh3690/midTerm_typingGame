@@ -12,19 +12,17 @@ def main():
     done = False
 
     while active_scene is not None:
+        quit_attempt = False
         for event in pg.event.get():
-            quit_attempt = False
             if event.type == pg.QUIT:
                 quit_attempt = True
             active_scene.handle_event(event)
 
-            if quit_attempt:
-                active_scene = None
-
         active_scene.update()
         active_scene.render(screen)
         active_scene = active_scene.next
-
+        if quit_attempt:
+            active_scene = None
         pg.display.flip()
         clock.tick(30)
 
