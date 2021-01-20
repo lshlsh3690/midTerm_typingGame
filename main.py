@@ -1,107 +1,165 @@
-import pygame #파이 게임 모듈 임포트
 
-pygame.init() #파이 게임 초기화
-Screen_height = 750     #스크린 너비
-Screen_width = 1200     #스크린 높이
-screen = pygame.display.set_mode((Screen_width, Screen_height)) #화면 크기 설정
-clock = pygame.time.Clock() 
+import pygame
+import pygame.freetype
+from pygame.sprite import Sprite
+from pygame.rect import Rect
+from enum import Enum
 
-Image1 = pygame.image.load('image/startbtn.png')      #시작 버튼 이미지 생성
-StartImage = pygame.transform.scale(Image1, (400, 150)) #이미지 크기 조절
-Image2 = pygame.image.load('image/startimg.jpg')
-StartBackGroundImage = pygame.transform.scale(Image2, (Screen_width, Screen_height))
-pygame.display.set_caption('Typing Game')                 #게임창 타이틀 설정
+# 컬러 이름을 튜플로 정의
+BLUE = (106, 159, 181)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
-validChars = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
-shiftChars = '~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?'
-shiftDown = False
-#버튼 클래스
-class Button:
-    def __init__(self, img, x, y, width, height, action):
-        mouse = pygame.mouse.get_pos()
-        click = pygame.mouse.get_pressed()
-        screen.blit(img,(x,y))
-        if x + width > mouse[0] > x and y + height > mouse[1] > y:
-            print('mouse btn is clicked')
-            if action != None:
-                time.sleep(1)
-                action()
+# 텍스트를 이미지로 바꿔서 화면에 띄울 수 있는 상태로 만들어주는 함수
+def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
+    """ Returns surface with text written on """
+    font = pygame.freetype.Font("./resource/CookieRun_Bold.otf", size=font_size)
+    surface, _ = font.render(text=text, fgcolor=text_rgb, bgcolor=bg_rgb)
+    return surface.convert_alpha()
 
-# class TextBox(pygame.sprite.Sprite):
-#   def __init__(self):
-#     pygame.sprite.Sprite.__init__(self)
-#     self.text = ""
-#     self.font = pygame.font.Font(None, 50)
-#     self.image = self.font.render("Enter your name", False, [0, 0, 0])
-#     self.rect = self.image.get_rect()
-#   def add_chr(self, char):
-#     global shiftDown
-#     if char in validChars and not shiftDown:
-#         self.text += char
-#     elif char in validChars and shiftDown:
-#         self.text += shiftChars[validChars.index(char)]
-#     self.update()
-#   def update(self):
-#     old_rect_pos = self.rect.center
-#     self.image = self.font.render(self.text, False, [0, 0, 0])
-#     self.rect = self.image.get_rect()
-#     self.rect.center = old_rect_pos
-#     print(self.text)
 
-# textBox = TextBox()
+class UIElement(Sprite):
+    """ An user interface element that can be added to a surface """
 
-userText = ''
-base_font = pygame.font.Font(None,32)
-input_rect = pygame.Rect(Screen_width/2-150, Screen_height/3*1,250,32)
-color = pygame.Color(255,255,255)
+    def __init__(self, center_position, text, font_size, bg_rgb, text_rgb, action=None):
+        """
+        Args:
+            center_position - tuple (x, y)
+            text - string of text to write
+            font_size - int
+            bg_rgb (background colour) - tuple (r, g, b)
+            text_rgb (text colour) - tuple (r, g, b)
+            action - the gamestate change associated with this button
+        """
+        self.mouse_over = False
 
-#변수
-while True: #게임 루프
-    screen.blit(StartBackGroundImage, (0,0))
-    if userText == '':
-        Textsurface = base_font.render('Enter the your name', True, (0,0,0))
-    else:
-        Textsurface = base_font.render(userText, True, (0,0,0))
-    
-    pygame.draw.rect(screen,color,input_rect)    
-    screen.blit(Textsurface, input_rect)
+        default_image = create_surface_with_text(
+            text=text, font_size=font_size, text_rgb=text_rgb, bg_rgb=bg_rgb
+        )
 
-    input_rect.w = max(100,Textsurface.get_width()+10)
-    #변수 업데이트
+        highlighted_image = create_surface_with_text(
+            text=text, font_size=font_size * 1.1, text_rgb=text_rgb, bg_rgb=bg_rgb
+        )
 
-    event = pygame.event.poll() #이트 처리
-    #if event.type == pygame.QUIT:
-    #    break
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            pygame.quit() 
-        if e.type == pygame.KEYUP:
-            if e.key in [pygame.K_RSHIFT, pygame.K_LSHIFT]:
-                shiftDown = False
-        elif e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_BACKSPACE:
-                userText = userText[:-1]
-                print(userText)
-            else:
-                userText += e.unicode
-                print(userText)
-            # textBox.add_chr(pygame.key.name(e.key))
-            # if e.key == pygame.K_SPACE:
-            #     textBox.text += " "
-            #     textBox.update()
-            # elif e.key in [pygame.K_RSHIFT, pygame.K_LSHIFT]:
-            #     shiftDown = True
-            # if e.key == pygame.K_BACKSPACE:
-            #     textBox.text = textBox.text[:-1]
-            #     textBox.update()
-            # if e.key == pygame.K_RETURN:
-            #     if len(textBox.text) > 0:
-            #         print (textBox.text)
-            #         pygame.quit()
-    #화면 그리기
+        self.images = [default_image, highlighted_image]
 
-    StartButton = Button(StartImage, Screen_width/2-200, Screen_height/3*2, 400, 150, None)
-    pygame.display.update() #모든 화면 그리기 업데이트
-    clock.tick(60) #30 FPS (초당 프레임 수) 를 위한 딜레이 추가, 딜레이 시간이 아닌 목표로 하는 FPS 값
+        self.rects = [
+            default_image.get_rect(center=center_position),
+            highlighted_image.get_rect(center=center_position),
+        ]
 
-pygame.quit()  
+        self.action = action
+
+        super().__init__()
+
+    @property
+    def image(self):
+        return self.images[1] if self.mouse_over else self.images[0]
+
+    @property
+    def rect(self):
+        return self.rects[1] if self.mouse_over else self.rects[0]
+
+    def update(self, mouse_pos, mouse_up):
+        """ Updates the mouse_over variable and returns the button's
+            action value when clicked.
+        """
+        if self.rect.collidepoint(mouse_pos):
+            self.mouse_over = True
+            if mouse_up:
+                return self.action
+        else:
+            self.mouse_over = False
+
+    def draw(self, surface):
+        """ Draws element onto a surface """
+        surface.blit(self.image, self.rect)
+
+
+def main():
+    pygame.init()
+
+    screen = pygame.display.set_mode((800, 600))
+    game_state = GameState.TITLE
+
+    while True:
+        if game_state == GameState.TITLE:
+            game_state = title_screen(screen)
+
+        if game_state == GameState.NEWGAME:
+            game_state = play_level(screen)
+
+        if game_state == GameState.QUIT:
+            pygame.quit()
+            return
+
+
+def title_screen(screen):
+    start_btn = UIElement(
+        center_position=(400, 400),
+        font_size=30,
+        bg_rgb=WHITE,
+        text_rgb=BLACK,
+        text="시작",
+        action=GameState.NEWGAME,
+    )
+    quit_btn = UIElement(
+        center_position=(400, 500),
+        font_size=30,
+        bg_rgb=WHITE,
+        text_rgb=BLACK,
+        text="종료",
+        action=GameState.QUIT,
+    )
+
+    buttons = [start_btn, quit_btn]
+
+    while True:
+        mouse_up = False
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+        screen.fill(WHITE)
+
+        for button in buttons:
+            ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
+            if ui_action is not None:
+                return ui_action
+            button.draw(screen)
+
+        pygame.display.flip()
+
+
+def play_level(screen):
+    return_btn = UIElement(
+        center_position=(140, 570),
+        font_size=20,
+        bg_rgb=WHITE,
+        text_rgb=BLACK,
+        text="메인화면으로 돌아가기",
+        action=GameState.TITLE,
+    )
+
+    while True:
+        mouse_up = False
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+        screen.fill(WHITE)
+
+        ui_action = return_btn.update(pygame.mouse.get_pos(), mouse_up)
+        if ui_action is not None:
+            return ui_action
+        return_btn.draw(screen)
+
+        pygame.display.flip()
+
+
+class GameState(Enum):
+    QUIT = -1
+    TITLE = 0
+    NEWGAME = 1
+
+
+if __name__ == "__main__":
+    main()
