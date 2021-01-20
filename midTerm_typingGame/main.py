@@ -8,7 +8,7 @@ def main():
     clock = pg.time.Clock()
 
     active_scene = LogoScene()
-
+    
     done = False
 
     while active_scene is not None:

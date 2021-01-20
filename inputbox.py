@@ -1,8 +1,8 @@
 import pygame as pg
 
 pg.init()
-COLOR_INACTIVE = pg.Color('lightskyblue3')
-COLOR_ACTIVE = pg.Color('dodgerblue2')
+COLOR_INACTIVE = pg.Color('0xAF8007')
+COLOR_ACTIVE = pg.Color('0xFFBA0A')
 FONT = pg.font.Font(None, 32)
 
 
