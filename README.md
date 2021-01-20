@@ -17,19 +17,24 @@ pip3 install pygame
 or 
 pip install pygame
 ```
-복사된 파일에 다음과 
+복사된 폴더의 main.py 코드를 python으로 실행하면 게임이 시작됩니다!
 
 ## 게임 시작 화면
 ![게임 시작 화면 스크린샷](./screenshots/start.png)
 
-1. 타이틀 이미지 (텍스트)
+1. 배경 이미지
 2. 이름을 적는 공간(텍스트박스)
-3. 게임 시작 버튼
 
-프로그램 실행 시 바로 게임 시작 화면이 뜨며 타이틀 이미지(텍스트)와 이름을 적는 란, 게임 시작 버튼이 나오게 됩니다. 이름을 적고 게임 시작 버튼을 누르면 게임이 시작됩니다. 이름은 중복해서 적을 수 없습니다.
+프로그램 실행 시 바로 게임 시작 화면이 뜨며 타이틀 이미지(텍스트)와 이름을 적는 란이 나오게 됩니다. 하얀색 박스를 클릭하면 이름을 적을 수 있으며, 이름을 적고 엔터 키를 게임이 시작됩니다. 이름은 영어만 입력할 수 있으며 중복해서 적을 수 없습니다.
 
 ## 게임 실행 화면
 
 ## 결과 화면 - 게임 오버
 
 ## 결과 화면 - 게임 클리어
+
+## 참고 소스
+
+<a href="https://kr.freepik.com/photos/background">종이 백그라운드 : rawpixel.com - kr.freepik.com</a>
+
+[Hollow/Outline text module](https://www.pygame.org/pcr/hollow_outline/index.php) by Pete Shinners 
