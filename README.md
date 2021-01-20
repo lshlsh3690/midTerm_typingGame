@@ -1,7 +1,7 @@
 # 산성비 타자연습
 
 ## 소개
-이 프로그램은 한컴타자연습 프로그램에 포함된 '산성비' 게임을 python의 pygame 모듈을 활용하여 제작한 게임입니다. 위에서 아래로 떨어지는 단어가 땅바닥에 닿기 전에 타자로 쳐서 없애버리세요!
+이 프로그램은 수업 시간에 배운 영단어 연습 프로그램을 python의 pygame 모듈을 활용하여 제작한 게임입니다. 제시된 단어를 최대한 빨리 입력하세요!
 
 ## 게임 실행 방법
 ### 1. 압축파일 다운로드
@@ -11,7 +11,13 @@ Git Bash Shell, Terminal을 사용하여 다음 코드를 복사&붙여넣기하
 ```
 https://github.com/lshlsh3690/midTerm_typingGame/
 ```
-이후 복사된 디렉토리의 build 폴더에 들어가서 실행 파일을 실행하시면 됩니다.
+본 프로그램을 직접 빌드하기 위해서는 **Python 3**와 **Pygame** 모듈이 설치되어 있어야 합니다. Python 3를 각 운영체제에 설치하신 다음 pip를 통해 pygame 모듈을 설치하세요.
+```
+pip3 install pygame
+or 
+pip install pygame
+```
+복사된 파일에 다음과 
 
 ## 게임 시작 화면
 ![게임 시작 화면 스크린샷](./screenshots/start.png)

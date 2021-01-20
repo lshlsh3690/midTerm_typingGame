@@ -1,10 +1,13 @@
 import pygame as pg
 from scene import *
 
+# 게임 옵션
+WIDTH = 800
+HEIGHT = 800
 
 def main():
     pg.init()
-    screen = pg.display.set_mode((800, 800))
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
     clock = pg.time.Clock()
 
     active_scene = LogoScene()

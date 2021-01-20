@@ -45,8 +45,32 @@ class LogoScene(SceneBase):
 
     def render(self, screen):
         screen.fill((255, 255, 255))
+        
+        # 제목 추가
+        title_string = 'Typing Game'
+        title_font = pg.font.Font(None, 60)
+        title_font_size = title_font.size(title_string)
+        title_text = title_font.render(title_string, True, self.color)
+        
         name_text = self.font.render('name', True, self.color)
+
+        # 아래 안내 문구 추가
+        info1_string = 'Type your name and press Enter key to start'
+        info1_font = pg.font.Font(None, 30)
+        info1_font_size = info1_font.size(info1_string)
+        info1_text = info1_font.render(info1_string, True, self.color)
+
+        info2_string = "(If the name you input exists, the game wouldn't start.)"
+        info2_font = pg.font.Font(None, 30)
+        info2_font_size = info2_font.size(info2_string)
+        info2_text = info2_font.render(info2_string, True, self.color)
+        
+        name_text = self.font.render('name', True, self.color)
+        
+        screen.blit(title_text, ((screen.get_width() // 2) - (title_font_size[0] // 2), 200))
         screen.blit(name_text, (260, 405))
+        screen.blit(info1_text, ((screen.get_width() // 2) - (info1_font_size[0] // 2), 600))
+        screen.blit(info2_text, ((screen.get_width() // 2) - (info2_font_size[0] // 2), 630))
         self.name_box.render(screen)
 
     def handle_event(self, event):
