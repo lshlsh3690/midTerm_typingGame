@@ -1,10 +1,11 @@
 import random, time
+from text_outline import outline_text
 import pygame as pg
-from constant import BOTTOM_HEIGHT, TOP_HEIGHT
+from constant import BOTTOM_HEIGHT, TOP_HEIGHT, GAME_FONT_MEDIUM_PATH
 
 class Word:
     def __init__(self, word, screen_width, screen_height):
-        self.font = pg.font.Font(None, 32)
+        self.font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 25)
         self.text = word
         self.word = self.font.render(self.text, True, (255, 255, 255))
         self.x = random.randrange(50, screen_width - 50)
@@ -22,4 +23,5 @@ class Word:
                 self.y += self.speed
 
     def render(self, screen):
+        outline_text(self.text, self.font, pg.Color('dodgerblue2'), self.x, self.y, screen)
         screen.blit(self.word, (self.x, self.y))

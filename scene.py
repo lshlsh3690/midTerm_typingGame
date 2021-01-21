@@ -2,6 +2,7 @@ import pygame as pg
 import inputbox as ib
 import sys, time, random, sqlite3, word, datetime
 from constant import *
+from text_outline import outline_text
 
 class SceneBase:
     def __init__(self):
@@ -35,6 +36,7 @@ class SceneBase:
         pass
 
     def scene_change(self, next_scene):
+        next_scene.name = self.name
         self.next = next_scene
 
 
@@ -102,6 +104,14 @@ class StageScene(SceneBase):
         pg.mixer.init()
         self.correct_sound = pg.mixer.Sound("./sound/good.wav")
         self.wrong_sound = pg.mixer.Sound("./sound/bad.wav")
+        # 라이프 이미지 불러오기
+        self.heart_red = pg.image.load("./image/heart_red.png")
+        self.heart_gray = pg.image.load("./image/heart_gray.png")
+        self.heart_container = [
+            {'img': self.heart_red, 'x': 715-65-65, 'y': 721},
+            {'img': self.heart_red, 'x': 715-65, 'y': 721},
+            {'img': self.heart_red, 'x': 715, 'y': 721}
+        ]
 
         # 영단어 리스트 (1000개 로드)
         self.words = []
@@ -135,7 +145,7 @@ class StageScene(SceneBase):
                 pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
                 self.cor_text = self.font.render('Wrong!', True, self.color)
                 self.heart -= 1
-
+                self.heart_container[self.heart]['img'] = self.heart_gray
         if self.heart <= 0:
             idx = self.cursor.execute('SELECT max(id) FROM records')
             max_id = idx.fetchone()[0]
@@ -161,7 +171,7 @@ class StageScene(SceneBase):
         
         self.input_box.render(screen)
         self.ui_render(screen)
-        screen.blit(self.cor_text, (400, 600))
+        # screen.blit(self.cor_text, (400, 600))
         for i in self.rain_words:
             i.render(screen)
 
@@ -179,26 +189,32 @@ class StageScene(SceneBase):
                     pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
                     self.cor_text = self.font.render('Wrong!', True, self.color)
                     self.heart -= 1
+                    self.heart_container[self.heart]['img'] = self.heart_gray
 
             self.input_box.text = ""
 
     def ui_render(self, screen):
-        info_text_margin = 5
+        info_text_margin = 3
 
-        info_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 20)
-        name_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 25)
+        info_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 18)
+        name_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 18)
+        
         time_text = info_font.render(format(self.life_time, '.3f'), True, self.highlighted_color)
         score_text = info_font.render(str(self.score), True, self.highlighted_color)
-        heart_text = self.font.render('heart: ' + str(self.heart), True, self.highlighted_color)
+        name_text = name_font.render(self.name, True, self.highlighted_color)
 
         screen.blit(time_text, (97+info_text_margin, 720+info_text_margin))
         screen.blit(score_text, (97+info_text_margin, 759+info_text_margin))
-        screen.blit(heart_text, (260, 110))
+        screen.blit(name_text, (358+info_text_margin, 109+info_text_margin))
+
+        # 라이프(하트) 이미지 출력
+        for heart in self.heart_container:
+            screen.blit(heart['img'], (heart['x'], heart['y']))
 
     def zen_words(self):
         if self.zen_time + 1 < time.time():
             self.zen_time = time.time()
-            self.rain_words.append(word.Word(random.choice(self.words), 720, 800))
+            self.rain_words.append(word.Word(random.choice(self.words), 670, 800))
 
 
 class GameOver(SceneBase):

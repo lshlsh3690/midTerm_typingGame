@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import pygame as pg
 from constant import *
