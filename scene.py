@@ -99,10 +99,10 @@ class StageScene(SceneBase):
         self.life_time = self.end - self.start  # 총 게임 시간 환산
         self.zen_words()  # 단어들을 생성
         self.input_box.update()
-        # word 리스트에서 각각의 word 인스턴스에서 y 좌표 변경
-        # 일정 높이 이하로 단어가 떨어질시 오답 처리
+        # word 리스트에서 각각의 인스턴스에서 y 좌표 변경
         for i in self.rain_words:
             i.update()
+            # 일정 높이 이하로 단어가 떨어질시 오답 처리
             if i.y > DEAD_LINE:
                 self.rain_words.remove(i)
                 pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
