@@ -8,10 +8,12 @@ SCREEN_HEIGHT = 800
 BOX_WIDTH = 140
 BOX_HEIGHT = 32
 
-# 목숨이 떨어지는 지점
+# 목숨이 떨어지는 지점 (바닥 높이)
 DEAD_LINE = SCREEN_HEIGHT - 80
 
-# TEXT 컬러 및 폰트
-pg.init()
-TEXT_COLOR = pg.Color('lightskyblue3')
-TEXT_FONT = pg.font.Font(None, BOX_HEIGHT)
+# 단어가 생성되는 높이, 바닥 높이 지정 
+TOP_HEIGHT = 170
+BOTTOM_HEIGHT = 680
+
+GAME_FONT_MEDIUM_PATH = "fonts/Gong_Gothic_OTF_Medium.otf"
+GAME_FONT_BOLD_PATH = "fonts/Gong_Gothic_OTF_Bold.otf"

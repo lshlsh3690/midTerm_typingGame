@@ -1,3 +1,5 @@
+
+import pygame as pg
 from constant import *
 from scene import *
 
