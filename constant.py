@@ -9,7 +9,7 @@ BOX_WIDTH = 140
 BOX_HEIGHT = 32
 
 # 목숨이 떨어지는 지점 (바닥 높이)
-DEAD_LINE = SCREEN_HEIGHT - 80
+DEAD_LINE = SCREEN_HEIGHT - 140
 
 # 단어가 생성되는 높이, 바닥 높이 지정 
 TOP_HEIGHT = 170

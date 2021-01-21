@@ -24,7 +24,8 @@ class Word:
 
     def render(self, screen):
         # 텍스트 아웃라인 렌더링
-        outline_text(self.text, self.font, pg.Color('dodgerblue2'), self.x, self.y, screen)
+        self.word_outline_surface = self.font.render(self.text, True, 'dodgerblue2')
+        outline_text(self.word_outline_surface, self.x, self.y, screen)
         # 단어 출력
         screen.blit(self.word, (self.x, self.y))
 

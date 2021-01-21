@@ -3,6 +3,10 @@ import sys, time, random, sqlite3, word, datetime
 from constant import *
 from text_outline import outline_text
 
+# 현재 사용자 이름을 저장하는 글로벌 변수
+global current_name
+current_name = ""
+
 # 씬들의 기초가 되는 클래스
 class SceneBase:
     def __init__(self):
@@ -39,7 +43,6 @@ class SceneBase:
 
     # 씬 변환 메소드
     def scene_change(self, next_scene):
-        next_scene.name = self.name
         self.next = next_scene
 
 
@@ -47,7 +50,9 @@ class SceneBase:
 class LogoScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
+        # 텍스트 박스 초기화
         self.name_box = ib.InputBox(380, 380, 250, 40, 10)
+        # 백그라운드 이미지 불러오기
         self.background = pg.image.load("./image/title.png")
 
     def update(self):
@@ -66,6 +71,8 @@ class LogoScene(SceneBase):
         if self.name_box.handle_event(event):
             # 인게임에 표시될 이름 저장
             self.name = self.name_box.text
+            global current_name
+            current_name = self.name
             # db에 이름 삽입 후 스테이지 씬으로 전환
             self.cursor.execute("INSERT INTO records(name) VALUES (?)", (self.name_box.text,))
             self.scene_change(StageScene())
@@ -144,7 +151,10 @@ class StageScene(SceneBase):
                 "Set life_time = ?, score = ?, regdate = ? "
                 "WHERE id = ?",
                 (
-                    self.life_time, self.score, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max_id
+                    min(9999.999, self.life_time), # 10000초가 넘어갈 경우 9999.999초로 고정  
+                    min(999999, self.score),  # 1000000점 이상일 경우 999999로 점수 고정
+                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), \
+                    max_id
                 )
             )
             self.conn.close()
@@ -187,13 +197,14 @@ class StageScene(SceneBase):
     def ui_render(self, screen):
         # 정보 텍스트 여백 설정
         info_text_margin = 3
+        global current_name
 
         # 정보 텍스트(시간, 점수), 이름 텍스트 폰트 설정 후 렌더링
         info_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 18)
         name_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 18)
         time_text = info_font.render(format(self.life_time, '.3f'), True, self.highlighted_color)
         score_text = info_font.render(str(self.score), True, self.highlighted_color)
-        name_text = name_font.render(self.name, True, self.highlighted_color)
+        name_text = name_font.render(current_name, True, self.highlighted_color)
 
         # UI 구성요소를 화면에 출력
         screen.blit(time_text, (97+info_text_margin, 720+info_text_margin))
@@ -218,39 +229,78 @@ class GameOver(SceneBase):
         # 저장한 본인 데이터 조회
         self.mydata = self.cursor.execute('SELECT max(id), name, life_time, score FROM records').fetchone()
 
-        # GameOver 메세지 설정
-        self.end_font = pg.font.Font(GAME_FONT_BOLD_PATH, 100)
-        self.end_surface = self.end_font.render('GameOver', True, 'black')
-        # 랭킹 메세지 설정
-        self.rank_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 32)
-        self.rank_str = 'name    time    score'
-        self.rank_surface = self.rank_font.render(self.rank_str, True, 'black')
+        # 결과 배경화면 불러오기
+        self.background = pg.image.load("./image/result.jpg")
+
+        # 랭킹 폰트 설정
+        self.rank_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 17)
         # 1-이름 2-생존시간 3-점수
-        self.myscore_str = 'Your     ' + self.mydata[1] + '  ' + format(self.mydata[2], '.3f') + '    ' + str(
-            self.mydata[3])
-        self.myscore_surface = self.rank_font.render(self.myscore_str, True, 'black')
+        self.myscore_surface = []
+        self.myscore_str = ['You', ]
+        self.myscore_str.append(self.mydata[1])
+        self.myscore_str.append('%.3f' % self.mydata[2])
+        self.myscore_str.append(str(self.mydata[3]))  
+
+        for string in self.myscore_str:
+            self.myscore_surface.append(self.rank_font.render(string, True, 'white'))
+
+        
         # 랭커 정보 조회
         self.rankers = self.cursor.execute('SELECT name, life_time, score FROM records order by score DESC').fetchall()
         self.ranker_surface_list = []
-        self.ranker_str = ""
+        self.ranker_str = []
         # 1위부터 10위까지 표시
         for i in range(0, 10):
             if i < self.rankers.__len__():
-                # 0-이름 1-생존시간 2-점수
-                self.ranker_str = ('%3s'% str(i + 1) + '%10s' % self.rankers[i][0] + '%10.3f' % self.rankers[i][1] +'%5d' % self.rankers[i][2])
+                # 0-번호, 1-이름, 2-시간, 3-점수
+                self.ranker_str_individual = []
+                self.ranker_surface_individual = []
+                self.ranker_str_individual.append((str(i + 1)))
+                self.ranker_str_individual.append(self.rankers[i][0])
+                self.ranker_str_individual.append('%.3f' % self.rankers[i][1])
+                self.ranker_str_individual.append('%d' % self.rankers[i][2])
+                self.ranker_surface_individual.append(self.rank_font.render((str(i + 1)), True, 'white'))
+                self.ranker_surface_individual.append(self.rank_font.render(self.rankers[i][0], True, 'white'))
+                self.ranker_surface_individual.append(self.rank_font.render('%.3f' % self.rankers[i][1], True, 'white'))
+                self.ranker_surface_individual.append(self.rank_font.render('%d' % self.rankers[i][2], True, 'white'))
             else:   # 만일 db에 저장된 데이터가 10개 미만인 경우 빈 곳을 NULL로 지정
-                self.ranker_str = (str(i + 1) + '    NULL    NULL    NULL')
-            self.ranker_surface_list.append(self.rank_font.render(self.ranker_str, True, 'black'))
+                self.ranker_str_individual = []
+                self.ranker_surface_individual = []
+                self.ranker_str_individual.append((str(i + 1)))
+                self.ranker_str_individual.append('NULL')
+                self.ranker_str_individual.append('NULL')
+                self.ranker_str_individual.append('NULL')
+                self.ranker_surface_individual.append(self.rank_font.render((str(i + 1)), True, 'white'))
+                self.ranker_surface_individual.append(self.rank_font.render('NULL', True, 'white'))
+                self.ranker_surface_individual.append(self.rank_font.render('NULL', True, 'white'))
+                self.ranker_surface_individual.append(self.rank_font.render('NULL', True, 'white'))
+            self.ranker_surface_list.append(self.ranker_surface_individual)
+            self.ranker_str.append(self.ranker_str_individual)
 
     def render(self, screen):
-        screen.fill((180, 180, 180))
-        screen.blit(self.end_surface, (145, 50))
-        screen.blit(self.rank_surface, (170, 150))
-        screen.blit(self.myscore_surface, (100, 200))
-        # 1위부터 10위까지 y좌표에 차이를 두어 출력
-        for i in range(0, 10):
-            screen.blit(self.ranker_surface_list[i], (150, 200 + (i + 1) * 30))
+        # 결과 배경화면으로 화면 채우기
+        screen.fill('black')
+        screen.blit(self.background, (0, 0))
 
+        # 자신의 스코어 출력
+        field_x_placement = [172, 260, 430, 558]
+        record_y_placement = 305
+        screen.fill((180, 180, 180))
+        for i, surface in enumerate(self.myscore_surface):
+            outline_surface = self.rank_font.render(self.myscore_str[i], True, 'dodgerblue2')
+            outline_text(outline_surface, field_x_placement[i], record_y_placement, screen)
+            screen.blit(surface, (field_x_placement[i], record_y_placement))
+
+        # 1위부터 10위까지 y좌표에 차이를 두어 출력 - 사람이 10명 미만이면 10명 미만만 출력
+        record_y_placement = 338
+        for i in range(0, min(len(self.ranker_surface_list), 10)):
+            for j, surface in enumerate(self.ranker_surface_list[i]):
+                outline_surface = self.rank_font.render(self.ranker_str[i][j], True, 'dodgerblue2')
+                outline_text(outline_surface, field_x_placement[j], record_y_placement, screen)
+                screen.blit(surface, (field_x_placement[j], record_y_placement))
+            record_y_placement += 22
+
+    # 결과 화면 이벤트 처리 부분
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
             # ESC - 게임 종료
