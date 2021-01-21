@@ -7,19 +7,6 @@ COLOR_INACTIVE = pg.Color('lightskyblue3')
 COLOR_ACTIVE = pg.Color('dodgerblue2')
 FONT = pg.font.Font(GAME_FONT_MEDIUM_PATH, 24)
 
-def get_outline(image,color=(0,0,0)):
-    """Returns an outlined image of the same size.  the image argument must
-    either be a convert surface with a set colorkey, or a convert_alpha
-    surface. color is the color which the outline will be drawn."""
-    rect = image.get_rect()
-    mask = pg.mask.from_surface(image)
-    outline = mask.outline()
-    outline_image = pg.Surface(rect.size).convert_alpha()
-    outline_image.fill((0,0,0,0))
-    for point in outline:
-        outline_image.set_at(point,color)
-    return outline_image
-
 class InputBox:
     def __init__(self, x, y, w, h, letter_limit=20, text=''):
         self.rect = pg.Rect(x, y, w, h)

@@ -1,3 +1,4 @@
+# main.py: 창을 만들고 화면 갱신, 화면 내 전체 이벤트 처리, 맨 먼저 실행되는 코드
 
 import pygame as pg
 from constant import *
@@ -6,12 +7,13 @@ from scene import *
 
 def main():
     pg.init()   # 파이게임 초기화
+    
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pg.time.Clock()
 
     active_scene = LogoScene()  # 첫 화면 = 로고씬
 
-    while active_scene is not None:
+    while active_scene is not None: # 화면 갱신 루프
         quit_attempt = False
         # 이벤트 처리
         for event in pg.event.get():
