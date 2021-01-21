@@ -24,6 +24,8 @@ class SceneBase:
                             "life_time FLOAT, " + \
                             "score INTEGER, " + \
                             "regdate TEXT)")
+        self.idx=0
+
 
     def update(self):
         pass
@@ -89,7 +91,6 @@ class StageScene(SceneBase):
         self.rain_words = []
         self.zen_time = time.time()
         self.score = 0
-        self.last_id = self.cursor.lastrowid
 
     def update(self):
         self.end = time.time()
@@ -106,13 +107,15 @@ class StageScene(SceneBase):
 
         if self.heart <= 0:
             self.score = int(self.life_time) * self.cor_cnt
+            self.idx = self.cursor.execute('SELECT max(id) FROM records')
+            max_id = self.idx.fetchone()[0]
             self.cursor.execute(
                 "Update records "
                 "Set cor_cnt = ?, life_time = ?, score = ?, regdate = ? "
                 "WHERE id = ?",
                 (
                     self.cor_cnt, self.life_time, self.score,
-                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), self.last_id
+                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max_id
                 )
             )
 
