@@ -55,11 +55,11 @@ class InputBox:
                 else:
                     if len(self.text) < self.letter_limit:
                         self.text += event.unicode
-                # Re-render the text.
+                # 텍스트 다시 렌더링
                 self.txt_surface = FONT.render(self.text, True, self.color)
 
     def update(self):
-        # Resize the box if the text is too long.
+        # 텍스트가 박스를 넘어가면 리사이즈
         width = max(self.rect[2], self.txt_surface.get_width()+10)
         self.rect.w = width
 

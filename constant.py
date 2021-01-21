@@ -15,5 +15,6 @@ DEAD_LINE = SCREEN_HEIGHT - 80
 TOP_HEIGHT = 170
 BOTTOM_HEIGHT = 680
 
+# 기본 폰트 경로
 GAME_FONT_MEDIUM_PATH = "fonts/Gong_Gothic_OTF_Medium.otf"
 GAME_FONT_BOLD_PATH = "fonts/Gong_Gothic_OTF_Bold.otf"
