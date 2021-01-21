@@ -3,13 +3,14 @@ import datetime
 import pygame as pg
 import inputbox as ib
 import sys, time, random, sqlite3
-
+from hollow import textOutline
 
 class SceneBase:
     def __init__(self):
         self.next = self
+        # 화면 구성요소 기본값 설정
         self.color = pg.Color('lightskyblue3')
-        self.font = pg.font.Font(None, 32)
+        self.font = pg.font.Font("fonts/Gong_Gothic_OTF_Medium.otf", 32)
         self.cor_cnt = 0  # 정답 개수
         self.record = 0
         # DB 생성
@@ -38,15 +39,16 @@ class SceneBase:
 class LogoScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.name_box = ib.InputBox(380, 380, 140, 40)
+        self.name_box = ib.InputBox(380, 380, 250, 40, 10)
         self.background = pg.image.load("./image/title.png")
 
     def update(self):
         self.name_box.update()
 
     def render(self, screen):
+        # 타이틀 화면 초기화(흰색)
         screen.fill((255, 255, 255))
-        
+        # 디자인된 배경화면으로 화면 채우기
         screen.blit(self.background, (0, 0))
 
         # 제목 추가
@@ -118,7 +120,7 @@ class StageScene(SceneBase):
         self.typing_box.update()
 
         if self.n < 5:
-            self.typing_box = ib.InputBox(400, 100, 140, 32, self.words[self.n])  # 뒤섞인 단어 리스트에서 랜덤으로 하나 선택
+            self.typing_box = ib.InputBox(400, 100, 140, 32, text=self.words[self.n])  # 뒤섞인 단어 리스트에서 랜덤으로 하나 선택
 
         else:
             if self.cor_cnt >= 3:  # 3개 이상 합격
