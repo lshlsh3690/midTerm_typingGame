@@ -162,16 +162,25 @@ class StageScene(SceneBase):
 class GameOver(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.color = pg.Color('red')
+        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("select * from records")
+        a = self.cursor.fetchall()
+        print(a)
         self.font = pg.font.Font(None, 100)
-        self.end_text = self.font.render('GameEnd', True, self.color)
-
+        self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 100)
+        self.end_text = self.font.render('GameOver', True, (0,0,0))
+        self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 50)
+        self.yourscore = self.font.render('Your Score : ' , True, (0,0,0))
+        self.highscore = self.font.render('High Score : ' , True, (0,0,0))
     def update(self):
         pass
 
     def render(self, screen):
-        screen.fill((0, 0, 0))
-        screen.blit(self.end_text, (200, 100))
+        screen.fill((180, 180, 180))
+        screen.blit(self.end_text, (145,100))
+        screen.blit(self.yourscore, (130, 300))
+        screen.blit(self.highscore, (130, 500))
 
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
