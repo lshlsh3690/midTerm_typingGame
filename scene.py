@@ -1,13 +1,22 @@
-import datetime
 import pygame as pg
 import inputbox as ib
-import sys, time, random, sqlite3
-import word
+import sys, time, random, sqlite3, word, datetime
+from constant import *
 
 
 class SceneBase:
     def __init__(self):
         self.next = self
+        # DB 생성
+        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
+        self.cursor = self.conn.cursor()
+        # 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS records (" + \
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT," + \
+                            "name TEXT , " + \
+                            "life_time FLOAT, " + \
+                            "score INTEGER, " + \
+                            "regdate TEXT)")
 
     def update(self):
         pass
@@ -25,26 +34,16 @@ class SceneBase:
 class LogoScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.color = pg.Color('lightskyblue3')
-        self.font = pg.font.Font(None, 32)
-        self.name_box = ib.InputBox(330, 400, 140, 32)
-        # DB 생성
-        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
-        self.cursor = self.conn.cursor()
-        # 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS records (" + \
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT," + \
-                            "name TEXT , " + \
-                            "life_time FLOAT, " + \
-                            "score INTEGER, " + \
-                            "regdate TEXT)")
+        self.box_color = pg.Color('lightskyblue3')
+        self.font = pg.font.Font(None, BOX_HEIGHT)
+        self.name_box = ib.InputBox((SCREEN_WIDTH - BOX_WIDTH) // 2, SCREEN_HEIGHT // 2, BOX_WIDTH, BOX_HEIGHT)
 
     def update(self):
         self.name_box.update()
 
     def render(self, screen):
-        screen.fill((255, 255, 255))
-        name_text = self.font.render('name', True, self.color)
+        screen.fill('white')
+        name_text = self.font.render('name', True, self.box_color)
         screen.blit(name_text, (260, 405))
         self.name_box.render(screen)
 
@@ -58,6 +57,8 @@ class StageScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
         self.input_box = ib.InputBox(400, 700, 140, 32)
+        self.color = pg.Color('lightskyblue3')
+        self.font = pg.font.Font(None, 32)
         self.cor_text = self.font.render('', True, self.color)
         self.time_text = self.font.render('', True, self.color)
         self.heart = 3
