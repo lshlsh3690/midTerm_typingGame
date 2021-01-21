@@ -44,8 +44,7 @@ class InputBox:
         if event.type == pg.KEYDOWN:
             if self.active:
                 if event.key == pg.K_RETURN:
-                    print(self.text)
-                    return self.text
+                    return True
                 elif event.key == pg.K_BACKSPACE:
                     self.text = self.text[:-1]
                 # 닉네임 10글자 이하 제약조건 추가

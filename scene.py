@@ -1,9 +1,7 @@
-import datetime
-
 import pygame as pg
 import inputbox as ib
-import sys, time, random, sqlite3
-from hollow import textOutline
+import sys, time, random, sqlite3, word, datetime
+from constant import *
 
 class SceneBase:
     def __init__(self):
@@ -18,9 +16,10 @@ class SceneBase:
         self.cursor = self.conn.cursor()
         # 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
         self.cursor.execute("CREATE TABLE IF NOT EXISTS records (" + \
-                            "name TEXT PRIMARY KEY, " + \
-                            "cor_cnt INTEGER, " + \
-                            "record TEXT, " + \
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT," + \
+                            "name TEXT , " + \
+                            "life_time FLOAT, " + \
+                            "score INTEGER, " + \
                             "regdate TEXT)")
 
     def update(self):
@@ -79,25 +78,25 @@ class LogoScene(SceneBase):
         self.name_box.render(screen)
 
     def handle_event(self, event):
-        # db에 이름 저장 부분 만들어야 함
         if self.name_box.handle_event(event):
-            self.scene_change(StageScene(self.name_box.text))
+            self.cursor.execute("INSERT INTO records(name) VALUES (?)", (self.name_box.text,))
+            self.scene_change(StageScene())
 
 
 class StageScene(SceneBase):
-    def __init__(self, name_str):
+    def __init__(self):
         SceneBase.__init__(self)
         self.input_box = ib.InputBox(400, 700, 140, 32)
-        self.typing_box = ib.InputBox(400, 100, 140, 32)
+        self.color = pg.Color('lightskyblue3')
+        self.font = pg.font.Font(None, 32)
         self.cor_text = self.font.render('', True, self.color)
         self.time_text = self.font.render('', True, self.color)
-        self.name_str = name_str
+        self.heart = 3
+        self.life_time = 0
         # 사운드 불러오기
         pg.mixer.init()
         self.correct_sound = pg.mixer.Sound("./sound/good.wav")
         self.wrong_sound = pg.mixer.Sound("./sound/bad.wav")
-
-        self.n = 0  # 게임 시도 횟수
 
         # 영단어 리스트 (1000개 로드)
         self.words = []
@@ -114,74 +113,112 @@ class StageScene(SceneBase):
             sys.exit()
         random.shuffle(self.words)  # 단어 리스트 뒤섞기
         self.start = time.time()  # Start Time
+        self.end = 0
+        self.rain_words = []
+        self.zen_time = time.time()
+        self.score = 0
 
     def update(self):
+        self.end = time.time()
+        self.life_time = self.end - self.start  # 총 게임 시간 환산
+        self.zen_words()
         self.input_box.update()
-        self.typing_box.update()
+        for i in self.rain_words:
+            i.update()
+            if i.y > 500:
+                self.rain_words.remove(i)
+                pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
+                self.cor_text = self.font.render('Wrong!', True, self.color)
+                self.heart -= 1
 
-        if self.n < 5:
-            self.typing_box = ib.InputBox(400, 100, 140, 32, text=self.words[self.n])  # 뒤섞인 단어 리스트에서 랜덤으로 하나 선택
-
-        else:
-            if self.cor_cnt >= 3:  # 3개 이상 합격
-                print("결과 : 합격")
-            else:
-                print("불합격")
-            ######### 결과 기록 DB 삽입
-            '''data삽입 전에 먼저 기록테이블 구조 열어보기'''
+        if self.heart <= 0:
+            idx = self.cursor.execute('SELECT max(id) FROM records')
+            max_id = idx.fetchone()[0]
             self.cursor.execute(
-                "INSERT INTO records('name', 'cor_cnt', 'record', 'regdate') VALUES (?, ?, ?, ?)",
+                "Update records "
+                "Set life_time = ?, score = ?, regdate = ? "
+                "WHERE id = ?",
                 (
-                    self.name_str, self.cor_cnt, self.record, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    self.life_time, self.score, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max_id
                 )
             )
-            '''ID는 오토 인크리먼트이므로 입력안해줘도 자동으로 db에서 연속된 숫자형으로 넣어줌'''
-            '''strftime('%Y-%m-%d %H:%M:%S') : 포맷 변환'''
+            # strftime('%Y-%m-%d %H:%M:%S') : 포맷 변환
 
-            '''게임 실행해서 db기록되는지 확인'''
+            # 게임 실행해서 db기록되는지 확인
             ######### 접속 해제
             self.conn.close()
+
             self.scene_change(GameOver())
 
     def render(self, screen):
-        screen.fill((255, 255, 0))
+        screen.fill((0, 0, 0))
         self.input_box.render(screen)
-        self.typing_box.render(screen)
-        self.timer_render(screen)
+        self.ui_render(screen)
         screen.blit(self.cor_text, (400, 600))
+        for i in self.rain_words:
+            i.render(screen)
 
     def handle_event(self, event):
-        if self.input_box.handle_event(event):
-            if str(self.words[self.n]).strip() == str(self.input_box.text).strip():  # (공백 제거한) 입력 확인
-                pg.mixer.Sound.play(self.correct_sound)  # 정답 사운드 재생
-                self.cor_text = self.font.render('Passed!', True, self.color)
-                self.cor_cnt += 1  # 정답 개수 카운트
-            else:
-                pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
-                self.cor_text = self.font.render('Wrong!', True, self.color)
-            self.input_box.text = ""
-            self.n += 1
+        self.input_box.handle_event(event)
+        if event.type == pg.KEYDOWN and event.key == pg.K_RETURN:
+            for i in self.rain_words:
+                if str(self.input_box.text).strip() == str(i.text).strip():
+                    pg.mixer.Sound.play(self.correct_sound)  # 정답 사운드 재생
+                    self.cor_text = self.font.render('Passed!', True, self.color)
+                    self.score += 20 * len(str(self.input_box.text).strip())
+                    self.rain_words.remove(i)
+                    break
+                if i == self.rain_words[-1]:
+                    pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
+                    self.cor_text = self.font.render('Wrong!', True, self.color)
+                    self.heart -= 1
 
-    def timer_render(self, screen):
-        end = time.time()  # 끝나는 시간 체크
-        self.record = end - self.start  # 총 게임 시간 환산
-        self.time_text = self.font.render('score: ' + format(self.record, '.3f'), True, self.color)
-        screen.blit(self.time_text, (260, 50))
+            self.input_box.text = ""
+
+    def ui_render(self, screen):
+        time_text = self.font.render('time: ' + format(self.life_time, '.3f'), True, self.color)
+        score_text = self.font.render('score: ' + str(self.score), True, self.color)
+        heart_text = self.font.render('heart: ' + str(self.heart), True, self.color)
+        screen.blit(time_text, (260, 50))
+        screen.blit(score_text, (260, 80))
+        screen.blit(heart_text, (260, 110))
+
+    def zen_words(self):
+        if self.zen_time + 1 < time.time():
+            self.zen_time = time.time()
+            self.rain_words.append(word.Word(random.choice(self.words), 800, 800))
 
 
 class GameOver(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.color = pg.Color('red')
-        self.font = pg.font.Font(None, 100)
-        self.end_text = self.font.render('GameEnd', True, self.color)
+        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("select * from records")
+        a = self.cursor.fetchall()
+        print(a[len(a)-1])
+        self.your_score = int(a[len(a)-1][3])
+        print(self.your_score)
 
+        self.high_score= int(self.your_score)
+        
+        for i in range(len(a)):
+            if int(a[i][3]) > self.high_score :
+                self.high_score = a[i][3]
+        self.font = pg.font.Font(None, 100)
+        self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 100)
+        self.end_text = self.font.render('GameOver', True, (0,0,0))
+        self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 50)
+        self.yourscore = self.font.render('Your Score : '+str(self.your_score), True, (0,0,0))
+        self.highscore = self.font.render('High Score : '+str(self.high_score), True, (0,0,0))
     def update(self):
         pass
 
     def render(self, screen):
-        screen.fill((0, 0, 0))
-        screen.blit(self.end_text, (200, 100))
+        screen.fill((180, 180, 180))
+        screen.blit(self.end_text, (145,100))
+        screen.blit(self.yourscore, (130, 300))
+        screen.blit(self.highscore, (130, 500))
 
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
