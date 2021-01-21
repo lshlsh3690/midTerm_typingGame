@@ -1,5 +1,4 @@
 import datetime
-
 import pygame as pg
 import inputbox as ib
 import sys, time, random, sqlite3
@@ -9,23 +8,6 @@ import word
 class SceneBase:
     def __init__(self):
         self.next = self
-        self.color = pg.Color('lightskyblue3')
-        self.font = pg.font.Font(None, 32)
-        self.cor_cnt = 0  # 정답 개수
-        self.life_time = 0
-        # DB 생성
-        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
-        self.cursor = self.conn.cursor()
-        # 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS records (" + \
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT," + \
-                            "name TEXT , " + \
-                            "cor_cnt INTEGER, " + \
-                            "life_time FLOAT, " + \
-                            "score INTEGER, " + \
-                            "regdate TEXT)")
-        self.idx=0
-
 
     def update(self):
         pass
@@ -43,7 +25,19 @@ class SceneBase:
 class LogoScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
+        self.color = pg.Color('lightskyblue3')
+        self.font = pg.font.Font(None, 32)
         self.name_box = ib.InputBox(330, 400, 140, 32)
+        # DB 생성
+        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
+        self.cursor = self.conn.cursor()
+        # 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS records (" + \
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT," + \
+                            "name TEXT , " + \
+                            "life_time FLOAT, " + \
+                            "score INTEGER, " + \
+                            "regdate TEXT)")
 
     def update(self):
         self.name_box.update()
@@ -67,6 +61,7 @@ class StageScene(SceneBase):
         self.cor_text = self.font.render('', True, self.color)
         self.time_text = self.font.render('', True, self.color)
         self.heart = 3
+        self.life_time = 0
         # 사운드 불러오기
         pg.mixer.init()
         self.correct_sound = pg.mixer.Sound("./sound/good.wav")
@@ -106,19 +101,16 @@ class StageScene(SceneBase):
                 self.heart -= 1
 
         if self.heart <= 0:
-            self.score = int(self.life_time) * self.cor_cnt
-            self.idx = self.cursor.execute('SELECT max(id) FROM records')
-            max_id = self.idx.fetchone()[0]
+            idx = self.cursor.execute('SELECT max(id) FROM records')
+            max_id = idx.fetchone()[0]
             self.cursor.execute(
                 "Update records "
-                "Set cor_cnt = ?, life_time = ?, score = ?, regdate = ? "
+                "Set life_time = ?, score = ?, regdate = ? "
                 "WHERE id = ?",
                 (
-                    self.cor_cnt, self.life_time, self.score,
-                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max_id
+                    self.life_time, self.score, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max_id
                 )
             )
-
             # strftime('%Y-%m-%d %H:%M:%S') : 포맷 변환
 
             # 게임 실행해서 db기록되는지 확인
@@ -142,7 +134,7 @@ class StageScene(SceneBase):
                 if str(self.input_box.text).strip() == str(i.text).strip():
                     pg.mixer.Sound.play(self.correct_sound)  # 정답 사운드 재생
                     self.cor_text = self.font.render('Passed!', True, self.color)
-                    self.cor_cnt += 1  # 정답 개수 카운트
+                    self.score += 20 * len(str(self.input_box.text).strip())
                     self.rain_words.remove(i)
                     break
                 if i == self.rain_words[-1]:
@@ -154,7 +146,7 @@ class StageScene(SceneBase):
 
     def ui_render(self, screen):
         time_text = self.font.render('time: ' + format(self.life_time, '.3f'), True, self.color)
-        score_text = self.font.render('correct: ' + str(self.cor_cnt), True, self.color)
+        score_text = self.font.render('score: ' + str(self.score), True, self.color)
         heart_text = self.font.render('heart: ' + str(self.heart), True, self.color)
         screen.blit(time_text, (260, 50))
         screen.blit(score_text, (260, 80))
