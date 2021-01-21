@@ -35,6 +35,4 @@ pip install pygame
 
 ## 참고 소스
 
-<a href="https://kr.freepik.com/photos/background">종이 백그라운드 : rawpixel.com - kr.freepik.com</a>
-
-[Hollow/Outline text module](https://www.pygame.org/pcr/hollow_outline/index.php) by Pete Shinners 
+<a href="https://pixabay.com/ko/users/freesally-1311100/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=949448">구름과 바다 이미지</a>: Sally Wilson by Pixabay
