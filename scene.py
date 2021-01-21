@@ -1,4 +1,3 @@
-import pygame as pg
 import inputbox as ib
 import sys, time, random, sqlite3, word, datetime
 from constant import *
@@ -35,7 +34,6 @@ class LogoScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
         self.box_color = pg.Color('lightskyblue3')
-        self.font = pg.font.Font(None, BOX_HEIGHT)
         self.name_box = ib.InputBox((SCREEN_WIDTH - BOX_WIDTH) // 2, SCREEN_HEIGHT // 2, BOX_WIDTH, BOX_HEIGHT)
 
     def update(self):
@@ -43,8 +41,8 @@ class LogoScene(SceneBase):
 
     def render(self, screen):
         screen.fill('white')
-        name_text = self.font.render('name', True, self.box_color)
-        screen.blit(name_text, (260, 405))
+        name_surface = TEXT_FONT.render('name', True, TEXT_COLOR)
+        screen.blit(name_surface, (self.name_box.rect.x - 70, self.name_box.rect.y + 5))
         self.name_box.render(screen)
 
     def handle_event(self, event):
@@ -56,11 +54,9 @@ class LogoScene(SceneBase):
 class StageScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.input_box = ib.InputBox(400, 700, 140, 32)
-        self.color = pg.Color('lightskyblue3')
-        self.font = pg.font.Font(None, 32)
-        self.cor_text = self.font.render('', True, self.color)
-        self.time_text = self.font.render('', True, self.color)
+        self.input_box = ib.InputBox((SCREEN_WIDTH - BOX_WIDTH) // 2, SCREEN_HEIGHT - 100, BOX_WIDTH, BOX_HEIGHT)
+        self.cor_surface = TEXT_FONT.render('', True, TEXT_COLOR)
+        self.time_surface = TEXT_FONT.render('', True, TEXT_COLOR)
         self.heart = 3
         self.life_time = 0
         # 사운드 불러오기
@@ -95,10 +91,10 @@ class StageScene(SceneBase):
         self.input_box.update()
         for i in self.rain_words:
             i.update()
-            if i.y > 500:
+            if i.y > DEAD_LINE:
                 self.rain_words.remove(i)
                 pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
-                self.cor_text = self.font.render('Wrong!', True, self.color)
+                self.cor_surface = TEXT_FONT.render('Wrong!', True, TEXT_COLOR)
                 self.heart -= 1
 
         if self.heart <= 0:
@@ -112,19 +108,14 @@ class StageScene(SceneBase):
                     self.life_time, self.score, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max_id
                 )
             )
-            # strftime('%Y-%m-%d %H:%M:%S') : 포맷 변환
-
-            # 게임 실행해서 db기록되는지 확인
-            ######### 접속 해제
             self.conn.close()
-
             self.scene_change(GameOver())
 
     def render(self, screen):
-        screen.fill((0, 0, 0))
+        screen.fill('black')
         self.input_box.render(screen)
         self.ui_render(screen)
-        screen.blit(self.cor_text, (400, 600))
+        screen.blit(self.cor_surface, (self.input_box.rect.x, self.input_box.rect.y - 50))
         for i in self.rain_words:
             i.render(screen)
 
@@ -134,63 +125,62 @@ class StageScene(SceneBase):
             for i in self.rain_words:
                 if str(self.input_box.text).strip() == str(i.text).strip():
                     pg.mixer.Sound.play(self.correct_sound)  # 정답 사운드 재생
-                    self.cor_text = self.font.render('Passed!', True, self.color)
+                    self.cor_surface = TEXT_FONT.render('Passed!', True, TEXT_COLOR)
                     self.score += 20 * len(str(self.input_box.text).strip())
                     self.rain_words.remove(i)
                     break
                 if i == self.rain_words[-1]:
                     pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
-                    self.cor_text = self.font.render('Wrong!', True, self.color)
+                    self.cor_surface = TEXT_FONT.render('Wrong!', True, TEXT_COLOR)
                     self.heart -= 1
 
             self.input_box.text = ""
 
     def ui_render(self, screen):
-        time_text = self.font.render('time: ' + format(self.life_time, '.3f'), True, self.color)
-        score_text = self.font.render('score: ' + str(self.score), True, self.color)
-        heart_text = self.font.render('heart: ' + str(self.heart), True, self.color)
-        screen.blit(time_text, (260, 50))
-        screen.blit(score_text, (260, 80))
-        screen.blit(heart_text, (260, 110))
+        time_surface = TEXT_FONT.render('time: ' + format(self.life_time, '.3f'), True, TEXT_COLOR)
+        score_surface = TEXT_FONT.render('score: ' + str(self.score), True, TEXT_COLOR)
+        heart_surface = TEXT_FONT.render('heart: ' + str(self.heart), True, TEXT_COLOR)
+        screen.blit(time_surface, (260, 50))
+        screen.blit(score_surface, (260, 80))
+        screen.blit(heart_surface, (260, 110))
 
     def zen_words(self):
         if self.zen_time + 1 < time.time():
             self.zen_time = time.time()
-            self.rain_words.append(word.Word(random.choice(self.words), 800, 800))
+            self.rain_words.append(word.Word(random.choice(self.words)))
 
 
 class GameOver(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
-        self.cursor = self.conn.cursor()
-        self.cursor.execute("select * from records")
-        a = self.cursor.fetchall()
-        print(a[len(a)-1])
-        self.your_score = int(a[len(a)-1][3])
-        print(self.your_score)
+        self.mydata = self.cursor.execute('SELECT max(id), name, life_time, score FROM records').fetchone()
 
-        self.high_score= int(self.your_score)
-        
-        for i in range(len(a)):
-            if int(a[i][3]) > self.high_score :
-                self.high_score = a[i][3]
-        self.font = pg.font.Font(None, 100)
-        self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 100)
-        self.end_text = self.font.render('GameOver', True, (0,0,0))
-        self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 50)
-        self.yourscore = self.font.render('Your Score : '+str(self.your_score), True, (0,0,0))
-        self.highscore = self.font.render('High Score : '+str(self.high_score), True, (0,0,0))
-    def update(self):
-        pass
+        self.end_font = pg.font.Font('./font/PottaOne-Regular.ttf', 100)
+        self.end_surface = self.end_font.render('GameOver', True, 'black')
+
+        self.rank_font = pg.font.Font('./font/PottaOne-Regular.ttf', 32)
+        self.rank_str = 'name    time    score'
+        self.myscore_str = 'Your     ' + self.mydata[1] + '  ' + format(self.mydata[2], '.3f') + '    ' + str(self.mydata[3])
+        self.myscore_surface = self.rank_font.render(self.myscore_str, True, 'black')
+        self.rank_surface = self.rank_font.render(self.rank_str, True, 'black')
+
+        self.top_ten = self.cursor.execute('SELECT name, life_time, score FROM records order by score DESC').fetchall()
+        self.rank_surface_list = []
+        for i in range(0, 11):
+            text = (str(i) + '    ' + self.top_ten[i][0] + '  ' + format(self.top_ten[i][1], '.3f') + '    ' + str(self.top_ten[i][2]))
+            self.rank_surface_list.append(self.rank_font.render(text, True, 'black'))
 
     def render(self, screen):
         screen.fill((180, 180, 180))
-        screen.blit(self.end_text, (145,100))
-        screen.blit(self.yourscore, (130, 300))
-        screen.blit(self.highscore, (130, 500))
+        screen.blit(self.end_surface, (145, 50))
+        screen.blit(self.rank_surface, (170, 150))
+        screen.blit(self.myscore_surface, (130, 200))
+        for i in range(1, 11):
+            screen.blit(self.rank_surface_list[i], (150, 200 + i * 30))
 
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 self.scene_change(None)
+            if event.key == pg.K_r:
+                self.scene_change(LogoScene())
