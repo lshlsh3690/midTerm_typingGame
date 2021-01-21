@@ -53,7 +53,7 @@ class LogoScene(SceneBase):
         # 텍스트 박스 초기화
         self.name_box = ib.InputBox(380, 380, 250, 40, 10)
         # 백그라운드 이미지 불러오기
-        self.background = pg.image.load("./image/title.png")
+        self.background = pg.image.load("./image/title.jpg")
 
     def update(self):
         self.name_box.update()  # 이름 입력시 name_box 내 text 필드에 저장됨
@@ -87,7 +87,7 @@ class StageScene(SceneBase):
         self.font = pg.font.Font(None, 32)
         self.cor_text = self.font.render('', True, self.color) # 정답/오답
         self.time_text = self.font.render('', True, self.color) # 시간
-        self.background = pg.image.load("./image/ingame.png")
+        self.background = pg.image.load("./image/ingame.jpg")
         self.heart = 3  # 목숨
         self.life_time = 0  # 게임 진행 시간
         # 사운드 불러오기
@@ -285,14 +285,13 @@ class GameOver(SceneBase):
         # 자신의 스코어 출력
         field_x_placement = [172, 260, 430, 558]
         record_y_placement = 305
-        screen.fill((180, 180, 180))
         for i, surface in enumerate(self.myscore_surface):
             outline_surface = self.rank_font.render(self.myscore_str[i], True, 'dodgerblue2')
             outline_text(outline_surface, field_x_placement[i], record_y_placement, screen)
             screen.blit(surface, (field_x_placement[i], record_y_placement))
 
         # 1위부터 10위까지 y좌표에 차이를 두어 출력 - 사람이 10명 미만이면 10명 미만만 출력
-        record_y_placement = 338
+        record_y_placement = 335
         for i in range(0, min(len(self.ranker_surface_list), 10)):
             for j, surface in enumerate(self.ranker_surface_list[i]):
                 outline_surface = self.rank_font.render(self.ranker_str[i][j], True, 'dodgerblue2')
