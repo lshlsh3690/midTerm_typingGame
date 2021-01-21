@@ -166,13 +166,21 @@ class GameOver(SceneBase):
         self.cursor = self.conn.cursor()
         self.cursor.execute("select * from records")
         a = self.cursor.fetchall()
-        print(a)
+        print(a[len(a)-1])
+        self.your_score = int(a[len(a)-1][3])
+        print(self.your_score)
+
+        self.high_score= int(self.your_score)
+        
+        for i in range(len(a)):
+            if int(a[i][3]) > self.high_score :
+                self.high_score = a[i][3]
         self.font = pg.font.Font(None, 100)
         self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 100)
         self.end_text = self.font.render('GameOver', True, (0,0,0))
         self.font = pg.font.Font('./font/PottaOne-Regular.ttf', 50)
-        self.yourscore = self.font.render('Your Score : ' , True, (0,0,0))
-        self.highscore = self.font.render('High Score : ' , True, (0,0,0))
+        self.yourscore = self.font.render('Your Score : '+str(self.your_score), True, (0,0,0))
+        self.highscore = self.font.render('High Score : '+str(self.high_score), True, (0,0,0))
     def update(self):
         pass
 
