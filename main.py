@@ -1,10 +1,9 @@
+#!/usr/bin/python3
+
 import pygame as pg
 from constant import *
 from scene import *
 
-# 게임 옵션
-WIDTH = 800
-HEIGHT = 800
 
 def main():
     pg.init()

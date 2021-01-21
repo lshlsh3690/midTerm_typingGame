@@ -1,6 +1,6 @@
 import random, time
 import pygame as pg
-
+from constant import BOTTOM_HEIGHT, TOP_HEIGHT
 
 class Word:
     def __init__(self, word, screen_width, screen_height):
@@ -8,7 +8,7 @@ class Word:
         self.text = word
         self.word = self.font.render(self.text, True, (255, 255, 255))
         self.x = random.randrange(50, screen_width - 50)
-        self.y = 0
+        self.y = TOP_HEIGHT
         self.speed = 3 * random.uniform(3, 3.5)
         self.past_time = time.time()
         self.delay_time = random.uniform(0.1, 0.8)
@@ -18,7 +18,7 @@ class Word:
         if self.past_time + self.delay_time < time.time():
             self.past_time = time.time()
 
-            if self.y < 500:
+            if self.y < BOTTOM_HEIGHT:
                 self.y += self.speed
 
     def render(self, screen):

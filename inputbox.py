@@ -1,10 +1,10 @@
 import pygame as pg
-from hollow import textOutline
+from constant import GAME_FONT_MEDIUM_PATH, GAME_FONT_BOLD_PATH
 
 pg.init()
 COLOR_INACTIVE = pg.Color('lightskyblue3')
 COLOR_ACTIVE = pg.Color('dodgerblue2')
-FONT = pg.font.Font("fonts/Gong_Gothic_OTF_Medium.otf", 30)
+FONT = pg.font.Font(GAME_FONT_MEDIUM_PATH, 24)
 
 def get_outline(image,color=(0,0,0)):
     """Returns an outlined image of the same size.  the image argument must
@@ -56,7 +56,7 @@ class InputBox:
 
     def update(self):
         # Resize the box if the text is too long.
-        width = max(250, self.txt_surface.get_width()+10)
+        width = max(self.rect[2], self.txt_surface.get_width()+10)
         self.rect.w = width
 
     def render(self, screen):

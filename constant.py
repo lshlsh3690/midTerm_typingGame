@@ -3,3 +3,9 @@ SCREEN_HEIGHT = 800
 
 BOX_WIDTH = 140
 BOX_HEIGHT = 32
+
+BOTTOM_HEIGHT = 680
+TOP_HEIGHT = 170
+
+GAME_FONT_MEDIUM_PATH = "fonts/Gong_Gothic_OTF_Medium.otf"
+GAME_FONT_BOLD_PATH = "fonts/Gong_Gothic_OTF_Bold.otf"

@@ -8,12 +8,15 @@ class SceneBase:
         self.next = self
         # 화면 구성요소 기본값 설정
         self.color = pg.Color('lightskyblue3')
-        self.font = pg.font.Font("fonts/Gong_Gothic_OTF_Medium.otf", 32)
+        self.highlighted_color = pg.Color('dodgerblue2')
+        self.font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 32)
+        self.bold_font = pg.font.Font(GAME_FONT_BOLD_PATH, 32)
         self.cor_cnt = 0  # 정답 개수
         self.record = 0
         # DB 생성
         self.conn = sqlite3.connect("./resource/records.db", isolation_level=None)
         self.cursor = self.conn.cursor()
+        self.name = ""
         # 테이블 생성 (AUTOINCREMENT - 자동으로 1씩 증가)
         self.cursor.execute("CREATE TABLE IF NOT EXISTS records (" + \
                             "id INTEGER PRIMARY KEY AUTOINCREMENT," + \
@@ -79,6 +82,7 @@ class LogoScene(SceneBase):
 
     def handle_event(self, event):
         if self.name_box.handle_event(event):
+            self.name = self.name_box.text
             self.cursor.execute("INSERT INTO records(name) VALUES (?)", (self.name_box.text,))
             self.scene_change(StageScene())
 
@@ -86,11 +90,12 @@ class LogoScene(SceneBase):
 class StageScene(SceneBase):
     def __init__(self):
         SceneBase.__init__(self)
-        self.input_box = ib.InputBox(400, 700, 140, 32)
+        self.input_box = ib.InputBox(260, 719, 282, 34)
         self.color = pg.Color('lightskyblue3')
         self.font = pg.font.Font(None, 32)
         self.cor_text = self.font.render('', True, self.color)
         self.time_text = self.font.render('', True, self.color)
+        self.background = pg.image.load("./image/ingame.png")
         self.heart = 3
         self.life_time = 0
         # 사운드 불러오기
@@ -125,7 +130,7 @@ class StageScene(SceneBase):
         self.input_box.update()
         for i in self.rain_words:
             i.update()
-            if i.y > 500:
+            if i.y > BOTTOM_HEIGHT:
                 self.rain_words.remove(i)
                 pg.mixer.Sound.play(self.wrong_sound)  # 오답 사운드 재생
                 self.cor_text = self.font.render('Wrong!', True, self.color)
@@ -152,6 +157,8 @@ class StageScene(SceneBase):
 
     def render(self, screen):
         screen.fill((0, 0, 0))
+        screen.blit(self.background, (0, 0))
+        
         self.input_box.render(screen)
         self.ui_render(screen)
         screen.blit(self.cor_text, (400, 600))
@@ -176,17 +183,22 @@ class StageScene(SceneBase):
             self.input_box.text = ""
 
     def ui_render(self, screen):
-        time_text = self.font.render('time: ' + format(self.life_time, '.3f'), True, self.color)
-        score_text = self.font.render('score: ' + str(self.score), True, self.color)
-        heart_text = self.font.render('heart: ' + str(self.heart), True, self.color)
-        screen.blit(time_text, (260, 50))
-        screen.blit(score_text, (260, 80))
+        info_text_margin = 5
+
+        info_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 20)
+        name_font = pg.font.Font(GAME_FONT_MEDIUM_PATH, 25)
+        time_text = info_font.render(format(self.life_time, '.3f'), True, self.highlighted_color)
+        score_text = info_font.render(str(self.score), True, self.highlighted_color)
+        heart_text = self.font.render('heart: ' + str(self.heart), True, self.highlighted_color)
+
+        screen.blit(time_text, (97+info_text_margin, 720+info_text_margin))
+        screen.blit(score_text, (97+info_text_margin, 759+info_text_margin))
         screen.blit(heart_text, (260, 110))
 
     def zen_words(self):
         if self.zen_time + 1 < time.time():
             self.zen_time = time.time()
-            self.rain_words.append(word.Word(random.choice(self.words), 800, 800))
+            self.rain_words.append(word.Word(random.choice(self.words), 720, 800))
 
 
 class GameOver(SceneBase):
